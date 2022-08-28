@@ -9,11 +9,6 @@ tasks:
       - poetry install
       - task: precommit-install
 
-  precommit-install:
-    cmds:
-      - echo '#!/bin/sh\nmake check\n' > .git/hooks/pre-commit
-      - chmod +x .git/hooks/pre-commit
-
   check:
     cmds:
       - task: pretty
