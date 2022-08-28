@@ -1,0 +1,49 @@
+version: "3"
+
+vars:
+  DIRS: toyapi
+
+tasks:
+  init:
+    cmds:
+      - poetry install
+      - task: precommit-install
+
+  precommit-install:
+    cmds:
+      - echo '#!/bin/sh\nmake check\n' > .git/hooks/pre-commit
+      - chmod +x .git/hooks/pre-commit
+
+  check:
+    cmds:
+      - task: pretty
+      - task: validate
+
+  pretty:
+    cmds:
+      - poetry run black "{{.DIRS}}"
+      - poetry run isort "{{.DIRS}}"
+      - poetry run autoflake --in-place --verbose --recursive "{{.DIRS}}"
+      - poetry run toml-sort --in-place --all pyproject.toml
+
+  validate:
+    cmds:
+      - poetry run black --check "{{.DIRS}}"
+      - poetry run isort --check "{{.DIRS}}"
+      - poetry run autoflake --recursive --check "{{.DIRS}}"
+      - poetry run toml-sort --check pyproject.toml
+      - task: flake8
+      - task: mypy
+      - task: pylint
+
+  flake8:
+    cmds:
+      - poetry run flake8 --jobs 4 --statistics --show-source "{{.DIRS}}"
+
+  mypy:
+    cmds:
+      - poetry run mypy --show-error-codes "{{.DIRS}}"
+
+  pylint:
+    cmds:
+      - poetry run pylint --jobs 4 --rcfile=setup.cfg "{{.DIRS}}"
